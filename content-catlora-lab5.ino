@@ -45,7 +45,10 @@ void loop() {
 }
 
 void TC5_Handler (void) {
+  //----this code will run every second----
   redLed.toggle();
+  //--------------------------------------
+  -
   TC5->COUNT16.INTFLAG.bit.MC0 = 1; //Writing a 1 to INTFLAG.bit.MC0 clears the interrupt so that it will run again
 }
 void tcConfigure(int sampleRate)
