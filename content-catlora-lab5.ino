@@ -30,10 +30,13 @@ void setup() {
   lora.begin(115200);
 
   Serial.println("-> Lora ABP Join...");
-  lora.joinABP(String(LORA_ABP_CLASS), String(LORA_DEV_EUI), String(LORA_DEV_ADDR), String(LORA_NWKS_KEY), String(LORA_APPS_KEY));
+  lora.joinABP(String(LORA_ABP_CLASS),
+               String(LORA_DEV_EUI),
+               String(LORA_DEV_ADDR),
+               String(LORA_NWKS_KEY),
+               String(LORA_APPS_KEY));
 
-  tcDisable();
-  tcReset();
+  tcStopTimer();
 
   greenLed.on();
   Serial.println("->Ready Go.");
@@ -49,7 +52,7 @@ void TC5_Handler (void) {
 
   TC5->COUNT16.INTFLAG.bit.MC0 = 1; //Writing a 1 to INTFLAG.bit.MC0 clears the interrupt so that it will run again
 }
-void setTimerFrequency(int sampleRate)
+void tcSetTimerFrequency(int sampleRate)
 {
   //set TC5 timer counter based off of the system clock and the user defined sample rate or waveform
   TC5->COUNT16.CC[0].reg = (uint16_t) (SystemCoreClock / sampleRate - 1);
@@ -85,7 +88,7 @@ void tcStartTimer(int sampleRate)
   TC5->COUNT16.CTRLA.reg |= TC_CTRLA_PRESCALER_DIV1024 | TC_CTRLA_ENABLE;
   while (TC5->COUNT16.STATUS.bit.SYNCBUSY == 1); // wait for sync
 
-  setTimerFrequency(sampleRate);
+  tcSetTimerFrequency(sampleRate);
 
   // Configure interrupt request
   NVIC_DisableIRQ(TC5_IRQn);
@@ -110,8 +113,9 @@ void tcReset()
 }
 
 //disable TC5
-void tcDisable()
+void tcStopTimer()
 {
   TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
   while (tcIsSyncing());
+  tcReset();
 }
